@@ -1,0 +1,66 @@
+"use client";
+
+import { Suspense, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { pixelViewContent } from "@/lib/pixel";
+import { PRODUCT_LABELS, type ProductType } from "@/lib/products";
+
+function ThankYouContent() {
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session");
+  const products = (searchParams.get("products") ?? "entry")
+    .split(",")
+    .filter((item): item is ProductType =>
+      ["entry", "bump1", "bump2", "bump3", "upsell1", "upsell2"].includes(item)
+    );
+
+  useEffect(() => {
+    pixelViewContent();
+  }, []);
+
+  return (
+    <main className="section-wrap section-pad">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-brand-border bg-white p-8 shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="text-4xl text-brand-accent">✓</span>
+          <h1 className="font-heading text-4xl text-brand-text">You&apos;re In. Check Your Email.</h1>
+        </div>
+        <p className="mt-5 text-lg text-slate-700">
+          Your access is being set up now. You&apos;ll receive a login link to your Private AI dashboard within 5
+          minutes.
+        </p>
+
+        <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Purchase Summary</p>
+          <p className="mt-2 text-slate-700">Session: {sessionId ?? "Pending"}</p>
+          <ul className="mt-3 space-y-1 text-sm text-slate-700">
+            {products.map((product) => (
+              <li key={product}>• {PRODUCT_LABELS[product]}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-8">
+          <p className="text-lg font-semibold text-brand-text">What happens next</p>
+          <ol className="mt-3 space-y-2 text-slate-700">
+            <li>1. Check your email for confirmation and access details.</li>
+            <li>2. Log into Whop with your purchase email.</li>
+            <li>3. Run your first automation from your unlocked dashboard tabs.</li>
+          </ol>
+        </div>
+
+        <p className="mt-8 text-sm text-slate-500">
+          Optional: share this launch with your team and invite them to your deployment plan.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={<main className="section-wrap section-pad">Loading...</main>}>
+      <ThankYouContent />
+    </Suspense>
+  );
+}
