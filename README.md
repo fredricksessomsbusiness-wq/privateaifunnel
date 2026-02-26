@@ -30,18 +30,22 @@
    - Service role key -> `SUPABASE_SERVICE_ROLE_KEY`
 
 ## 3) Whop Setup
-1. Create one Whop product for this funnel.
-2. Create roles/tabs for:
-   - Entry Blueprint
-   - Prompt Vault
-   - Community + Monthly Drops
-   - Security
-   - Agent OS Premium
-   - DFY Installation Portal + Support
-3. Copy IDs:
-   - Product ID -> `WHOP_PRODUCT_ID`
-   - Role IDs -> `WHOP_ROLE_ENTRY`, `WHOP_ROLE_BUMP1`, `WHOP_ROLE_BUMP2`, `WHOP_ROLE_BUMP3`, `WHOP_ROLE_UPSELL1`, `WHOP_ROLE_UPSELL2`
-4. API key -> `WHOP_API_KEY`
+1. Create 6 Whop products (one per funnel item):
+   - Entry
+   - Bump 1
+   - Bump 2
+   - Bump 3
+   - Upsell 1
+   - Upsell 2
+2. Copy each product ID (`prod_...`) into:
+   - `WHOP_PRODUCT_ENTRY`
+   - `WHOP_PRODUCT_BUMP1`
+   - `WHOP_PRODUCT_BUMP2`
+   - `WHOP_PRODUCT_BUMP3`
+   - `WHOP_PRODUCT_UPSELL1`
+   - `WHOP_PRODUCT_UPSELL2`
+3. Set `WHOP_API_KEY`.
+4. Webhook fulfillment creates a Whop membership for each purchased product.
 
 ## 4) Meta Pixel Setup
 1. In Meta Events Manager, create/select your Pixel.
@@ -82,7 +86,7 @@
    - Confirm `upsell2_unlocked=true`.
 5. Refund flow:
    - Refund a payment in Stripe.
-   - Confirm matching access boolean flips to false and Whop role removal is attempted.
+   - Confirm matching access boolean flips to false and Whop membership termination is attempted for the refunded product.
 
 ## Local Development
 1. Install deps: `npm install`

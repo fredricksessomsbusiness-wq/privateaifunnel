@@ -27,13 +27,13 @@ export const PRODUCT_PRICE_IDS: Record<ProductType, string> = {
   upsell2: process.env.STRIPE_PRICE_UPSELL2 ?? "",
 };
 
-export const PRODUCT_WHOP_ROLES: Record<ProductType, string> = {
-  entry: process.env.WHOP_ROLE_ENTRY ?? "",
-  bump1: process.env.WHOP_ROLE_BUMP1 ?? "",
-  bump2: process.env.WHOP_ROLE_BUMP2 ?? "",
-  bump3: process.env.WHOP_ROLE_BUMP3 ?? "",
-  upsell1: process.env.WHOP_ROLE_UPSELL1 ?? "",
-  upsell2: process.env.WHOP_ROLE_UPSELL2 ?? "",
+export const PRODUCT_WHOP_PRODUCT_IDS: Record<ProductType, string> = {
+  entry: process.env.WHOP_PRODUCT_ENTRY ?? process.env.WHOP_PRODUCT_ID ?? "",
+  bump1: process.env.WHOP_PRODUCT_BUMP1 ?? "",
+  bump2: process.env.WHOP_PRODUCT_BUMP2 ?? "",
+  bump3: process.env.WHOP_PRODUCT_BUMP3 ?? "",
+  upsell1: process.env.WHOP_PRODUCT_UPSELL1 ?? "",
+  upsell2: process.env.WHOP_PRODUCT_UPSELL2 ?? "",
 };
 
 export const BUMP_PRODUCTS = ["bump1", "bump2", "bump3"] as const;

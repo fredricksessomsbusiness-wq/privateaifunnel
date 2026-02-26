@@ -8,11 +8,11 @@ import {
   BUMP_PRODUCTS,
   PRODUCT_AMOUNTS,
   PRODUCT_LABELS,
-  PRODUCT_WHOP_ROLES,
+  PRODUCT_WHOP_PRODUCT_IDS,
   type AccessColumns,
   type ProductType,
 } from "@/lib/products";
-import { addWhopRole, createWhopMembership, removeWhopRole } from "@/lib/whop";
+import { createWhopMembership, terminateWhopMembershipByEmail } from "@/lib/whop";
 
 export const runtime = "nodejs";
 
@@ -119,34 +119,25 @@ async function insertPurchases(userId: string, paymentIntentId: string, products
 }
 
 async function ensureWhopAccess(user: DbUser, products: ProductType[]): Promise<void> {
-  const roles = products
-    .map((product) => PRODUCT_WHOP_ROLES[product])
-    .filter((role): role is string => Boolean(role));
-
-  if (roles.length === 0) return;
-
   let whopUserId = user.whop_user_id;
 
-  if (!whopUserId) {
-    whopUserId = await createWhopMembership(user.email, roles);
+  await Promise.all(
+    products.map(async (product) => {
+      const whopProductId = PRODUCT_WHOP_PRODUCT_IDS[product];
+      if (!whopProductId) return;
+      const created = await createWhopMembership(user.email, whopProductId);
+      if (!whopUserId && created.whopUserId) {
+        whopUserId = created.whopUserId;
+      }
+    })
+  );
 
-    const { error } = await supabaseAdmin
-      .from("users")
-      .update({ whop_user_id: whopUserId })
-      .eq("id", user.id);
-
+  if (!user.whop_user_id && whopUserId) {
+    const { error } = await supabaseAdmin.from("users").update({ whop_user_id: whopUserId }).eq("id", user.id);
     if (error) {
       throw new Error(error.message);
     }
-
-    return;
   }
-
-  await Promise.all(
-    roles.map(async (roleId) => {
-      await addWhopRole(whopUserId!, roleId);
-    })
-  );
 }
 
 async function sendConfirmationEmail(email: string, products: ProductType[]): Promise<void> {
@@ -184,6 +175,15 @@ async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent): Promi
   const customerId = typeof intent.customer === "string" ? intent.customer : null;
   const user = await upsertUser(email, customerId);
 
+  const { count } = await supabaseAdmin
+    .from("purchases")
+    .select("id", { count: "exact", head: true })
+    .ilike("stripe_payment_intent_id", `${intent.id}%`);
+
+  if ((count ?? 0) > 0) {
+    return;
+  }
+
   await insertPurchases(user.id, intent.id, products);
   await unlockProducts(user.id, products);
   await ensureWhopAccess(user, products);
@@ -196,7 +196,7 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
 
   const { data: userData, error: userError } = await supabaseAdmin
     .from("users")
-    .select("id, whop_user_id")
+    .select("id, whop_user_id, email")
     .eq("stripe_customer_id", customerId)
     .single();
 
@@ -219,9 +219,9 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
 
   await lockProduct(userData.id as string, product);
 
-  const roleId = PRODUCT_WHOP_ROLES[product];
-  if (userData.whop_user_id && roleId) {
-    await removeWhopRole(userData.whop_user_id as string, roleId);
+  const whopProductId = PRODUCT_WHOP_PRODUCT_IDS[product];
+  if (whopProductId && userData.email) {
+    await terminateWhopMembershipByEmail(userData.email as string, whopProductId);
   }
 }
 
