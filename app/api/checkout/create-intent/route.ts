@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
       amount,
       currency: "usd",
       customer: customer.id,
-      automatic_payment_methods: { enabled: true },
+      automatic_payment_methods: { enabled: true, allow_redirects: "never" },
+      setup_future_usage: "off_session",
       receipt_email: email,
       metadata: {
         email,

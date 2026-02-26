@@ -16,11 +16,15 @@ export default function BumpToggle({
   onToggle,
 }: BumpToggleProps) {
   return (
-    <div className="card p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-base font-semibold text-brand-text">{title}</h3>
-          <p className="mt-1 text-sm text-slate-600">{description}</p>
+    <div
+      className={`rounded-xl border p-4 transition ${
+        checked ? "border-brand-border bg-brand-tint" : "border-slate-200 bg-white"
+      }`}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="pr-2">
+          <h3 className="text-base font-semibold leading-snug text-brand-text">{title}</h3>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">{description}</p>
           <p className="mt-2 text-sm font-semibold text-brand-accent">{priceLabel}</p>
         </div>
         <button
@@ -28,13 +32,13 @@ export default function BumpToggle({
           role="switch"
           aria-checked={checked}
           onClick={() => onToggle(!checked)}
-          className={`relative h-7 w-12 rounded-full transition ${checked ? "bg-brand-accent" : "bg-slate-300"}`}
+          className={`inline-flex min-w-36 items-center justify-center rounded-brand px-4 py-2 text-sm font-semibold transition ${
+            checked
+              ? "bg-brand-accent text-white hover:bg-brand-hover"
+              : "border border-brand-border bg-white text-brand-accent hover:bg-brand-tint"
+          }`}
         >
-          <span
-            className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white transition-transform ${
-              checked ? "translate-x-5" : "translate-x-0"
-            }`}
-          />
+          {checked ? "Added to Order" : "Add to Order"}
         </button>
       </div>
     </div>

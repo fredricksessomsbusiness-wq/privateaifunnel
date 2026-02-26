@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import CheckoutForm from "@/components/CheckoutForm";
 import Footer from "@/components/Footer";
@@ -25,9 +24,7 @@ export default function CheckoutPage() {
       <section className="section-wrap section-pad">
         <div className="mx-auto max-w-6xl">
           {stripePromise ? (
-            <Elements stripe={stripePromise}>
-              <CheckoutForm />
-            </Elements>
+            <CheckoutForm stripePromise={stripePromise} />
           ) : (
             <p className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-700">
               Missing NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.
