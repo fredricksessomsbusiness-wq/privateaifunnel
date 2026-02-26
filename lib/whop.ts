@@ -17,18 +17,22 @@ export interface CreatedMembership {
 }
 
 export async function createWhopMembership(email: string, productId: string): Promise<CreatedMembership> {
+  const companyId = process.env.WHOP_COMPANY_ID;
   const response = await fetch(`${WHOP_BASE_URL}/memberships`, {
     method: "POST",
     headers: getWhopHeaders(),
     body: JSON.stringify({
       product_id: productId,
       email,
+      ...(companyId ? { company_id: companyId } : {}),
     }),
   });
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Failed to create Whop membership: ${body}`);
+    throw new Error(
+      `Failed to create Whop membership for product ${productId}: ${body}`
+    );
   }
 
   const data = (await response.json()) as { id?: string; user_id?: string; user?: { id?: string } };

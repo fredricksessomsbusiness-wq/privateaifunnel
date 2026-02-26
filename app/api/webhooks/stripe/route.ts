@@ -19,6 +19,7 @@ export const runtime = "nodejs";
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const resendApiKey = process.env.RESEND_API_KEY;
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://yourdomain.com";
+const resendFromEmail = process.env.RESEND_FROM_EMAIL ?? "Private AI Automation <onboarding@resend.dev>";
 
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
@@ -141,12 +142,15 @@ async function ensureWhopAccess(user: DbUser, products: ProductType[]): Promise<
 }
 
 async function sendConfirmationEmail(email: string, products: ProductType[]): Promise<void> {
-  if (!resend) return;
+  if (!resend) {
+    console.warn("RESEND_API_KEY missing; skipping confirmation email");
+    return;
+  }
 
   const purchasedItems = products.map((product) => `<li>${PRODUCT_LABELS[product]}</li>`).join("");
 
   await resend.emails.send({
-    from: "Private AI Automation <onboarding@resend.dev>",
+    from: resendFromEmail,
     to: email,
     subject: "Your Private AI Access Is Ready",
     html: `
@@ -186,8 +190,26 @@ async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent): Promi
 
   await insertPurchases(user.id, intent.id, products);
   await unlockProducts(user.id, products);
-  await ensureWhopAccess(user, products);
-  await sendConfirmationEmail(email, products);
+
+  try {
+    await ensureWhopAccess(user, products);
+  } catch (error) {
+    console.error("Whop fulfillment failed", {
+      intentId: intent.id,
+      email,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  try {
+    await sendConfirmationEmail(email, products);
+  } catch (error) {
+    console.error("Resend confirmation failed", {
+      intentId: intent.id,
+      email,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
