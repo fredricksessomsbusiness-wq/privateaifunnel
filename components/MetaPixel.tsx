@@ -20,6 +20,13 @@ export default function MetaPixel() {
           s.parentNode.insertBefore(t,s)}(window, document,'script',
           'https://connect.facebook.net/en_US/fbevents.js');
           fbq('init', '${pixelId}');
+          fbq('track', 'PageView');
+          if (window.__pixelQueue && window.__pixelQueue.length) {
+            window.__pixelQueue.forEach(function(evt) {
+              fbq('track', evt.eventName, evt.parameters || {}, evt.options || {});
+            });
+            window.__pixelQueue = [];
+          }
         `}
       </Script>
       <noscript>

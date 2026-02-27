@@ -1,11 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import type { Stripe } from "@stripe/stripe-js";
 import BumpToggle from "@/components/BumpToggle";
 import { BUMP_PRODUCTS, PRODUCT_AMOUNTS, PRODUCT_LABELS, type ProductType } from "@/lib/products";
-import { pixelAddToCart, pixelInitiateCheckout, pixelLead, pixelPurchase } from "@/lib/pixel";
+import { pixelAddToCart, pixelLead, pixelPurchase } from "@/lib/pixel";
 import { readStoredUtms } from "@/lib/utm";
 import { formatUsd } from "@/lib/currency";
 
@@ -20,17 +20,32 @@ interface CheckoutFormProps {
 }
 
 interface PaymentPaneProps {
+  firstName: string;
   email: string;
+  phone: string;
+  consentMarketing: boolean;
   totalCents: number;
   summaryProducts: ProductType[];
 }
 
-function PaymentPane({ email, totalCents, summaryProducts }: PaymentPaneProps) {
+function normalizePhone(input: string): string {
+  return input.replace(/[^+\d]/g, "");
+}
+
+function PaymentPane({
+  firstName,
+  email,
+  phone,
+  consentMarketing,
+  totalCents,
+  summaryProducts,
+}: PaymentPaneProps) {
   const stripe = useStripe();
   const elements = useElements();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [leadTracked, setLeadTracked] = useState(false);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -44,6 +59,30 @@ function PaymentPane({ email, totalCents, summaryProducts }: PaymentPaneProps) {
     setLoading(true);
 
     try {
+      const utms = readStoredUtms();
+      const leadResponse = await fetch("/api/leads/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          externalId: `${email}|${phone}`,
+          firstName,
+          email,
+          phone,
+          consentMarketing,
+          utms,
+        }),
+      });
+
+      if (!leadResponse.ok) {
+        const payload = (await leadResponse.json()) as { error?: string };
+        throw new Error(payload.error ?? "Unable to capture lead details.");
+      }
+
+      if (!leadTracked) {
+        pixelLead();
+        setLeadTracked(true);
+      }
+
       const submitResult = await elements.submit();
       if (submitResult.error) {
         throw new Error(submitResult.error.message);
@@ -96,10 +135,6 @@ function PaymentPane({ email, totalCents, summaryProducts }: PaymentPaneProps) {
   );
 }
 
-function normalizePhone(input: string): string {
-  return input.replace(/[^+\d]/g, "");
-}
-
 export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
@@ -115,7 +150,6 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [intentLoading, setIntentLoading] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
-  const [leadCaptured, setLeadCaptured] = useState(false);
 
   const selectedBumpList = useMemo(
     () => BUMP_PRODUCTS.filter((product) => selectedBumps[product]),
@@ -134,97 +168,62 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
     if (checked) {
       pixelAddToCart(product, PRODUCT_AMOUNTS[product] / 100);
     }
-
-    if (clientSecret) {
-      setClientSecret(null);
-      setIntentError("Order updated. Tap continue again to refresh payment options.");
-    }
   };
 
-  const handlePreparePayment = async () => {
-    setIntentError(null);
+  const normalizedFirstName = firstName.trim();
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPhone = normalizePhone(phone);
+  const readyForPaymentMethods =
+    normalizedFirstName.length > 0 &&
+    normalizedEmail.includes("@") &&
+    normalizedPhone.length >= 10 &&
+    consentMarketing;
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPhone = normalizePhone(phone);
-    const normalizedFirstName = firstName.trim();
-
-    if (!normalizedFirstName) {
-      setIntentError("Please enter your first name.");
-      return;
-    }
-
-    if (!normalizedEmail.includes("@")) {
-      setIntentError("Please enter a valid email address.");
-      return;
-    }
-
-    if (normalizedPhone.length < 10) {
-      setIntentError("Please enter a valid phone number.");
-      return;
-    }
-
-    if (!consentMarketing) {
-      setIntentError("Please confirm call/SMS consent to continue.");
+  useEffect(() => {
+    if (!readyForPaymentMethods) {
+      setClientSecret(null);
+      setIntentError(null);
       return;
     }
 
     setIntentLoading(true);
+    setIntentError(null);
 
-    try {
-      const utms = readStoredUtms();
-      const externalId = `${normalizedEmail}|${normalizedPhone}`;
+    const timer = window.setTimeout(async () => {
+      try {
+        const utms = readStoredUtms();
+        const response = await fetch("/api/checkout/create-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firstName: normalizedFirstName,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            bumps: selectedBumpList,
+            utms,
+          }),
+        });
 
-      const leadResponse = await fetch("/api/leads/capture", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          externalId,
-          firstName: normalizedFirstName,
-          email: normalizedEmail,
-          phone: normalizedPhone,
-          consentMarketing,
-          utms,
-        }),
-      });
+        if (!response.ok) {
+          const payload = (await response.json()) as { error?: string };
+          throw new Error(payload.error ?? "Unable to initialize payment methods.");
+        }
 
-      if (!leadResponse.ok) {
-        const payload = (await leadResponse.json()) as { error?: string };
-        throw new Error(payload.error ?? "Unable to capture lead details.");
+        const payload = (await response.json()) as { clientSecret: string };
+        setClientSecret(payload.clientSecret);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unable to initialize payment methods.";
+        setClientSecret(null);
+        setIntentError(message);
+      } finally {
+        setIntentLoading(false);
       }
+    }, 350);
 
-      if (!leadCaptured) {
-        pixelLead();
-      }
-
-      const paymentResponse = await fetch("/api/checkout/create-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: normalizedFirstName,
-          email: normalizedEmail,
-          phone: normalizedPhone,
-          bumps: selectedBumpList,
-          utms,
-        }),
-      });
-
-      if (!paymentResponse.ok) {
-        const payload = (await paymentResponse.json()) as { error?: string };
-        throw new Error(payload.error ?? "Unable to initialize payment methods.");
-      }
-
-      const payload = (await paymentResponse.json()) as { clientSecret: string };
-      setClientSecret(payload.clientSecret);
-      setLeadCaptured(true);
-      pixelInitiateCheckout();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to initialize checkout.";
-      setClientSecret(null);
-      setIntentError(message);
-    } finally {
-      setIntentLoading(false);
-    }
-  };
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [readyForPaymentMethods, normalizedFirstName, normalizedEmail, normalizedPhone, selectedBumpList]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
@@ -287,10 +286,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
               type="text"
               required
               value={firstName}
-              onChange={(event) => {
-                setFirstName(event.target.value);
-                if (clientSecret) setClientSecret(null);
-              }}
+              onChange={(event) => setFirstName(event.target.value)}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-brand-accent focus:outline-none"
               placeholder="John"
             />
@@ -302,10 +298,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
               type="email"
               required
               value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                if (clientSecret) setClientSecret(null);
-              }}
+              onChange={(event) => setEmail(event.target.value)}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-brand-accent focus:outline-none"
               placeholder="you@company.com"
             />
@@ -317,10 +310,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
               type="tel"
               required
               value={phone}
-              onChange={(event) => {
-                setPhone(event.target.value);
-                if (clientSecret) setClientSecret(null);
-              }}
+              onChange={(event) => setPhone(event.target.value)}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-brand-accent focus:outline-none"
               placeholder="(555) 555-5555"
             />
@@ -337,17 +327,15 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
               I consent to be contacted by phone/SMS about my request and understand message/data rates may apply.
             </span>
           </label>
-
-          <button
-            type="button"
-            className="brand-btn w-full"
-            onClick={handlePreparePayment}
-            disabled={intentLoading}
-          >
-            {intentLoading ? "Preparing Checkout..." : "Continue to Secure Payment"}
-          </button>
         </div>
 
+        {!readyForPaymentMethods ? (
+          <p className="mt-5 text-sm text-slate-600">
+            Enter your first name, email, phone, and consent to load payment options.
+          </p>
+        ) : null}
+
+        {intentLoading ? <p className="mt-5 text-sm text-slate-600">Loading payment options...</p> : null}
         {intentError ? <p className="mt-5 text-sm text-red-600">{intentError}</p> : null}
 
         {clientSecret ? (
@@ -361,13 +349,17 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
                 },
               }}
             >
-              <PaymentPane email={email.trim().toLowerCase()} totalCents={totalCents} summaryProducts={summaryProducts} />
+              <PaymentPane
+                firstName={normalizedFirstName}
+                email={normalizedEmail}
+                phone={normalizedPhone}
+                consentMarketing={consentMarketing}
+                totalCents={totalCents}
+                summaryProducts={summaryProducts}
+              />
             </Elements>
           </div>
-        ) : (
-          !intentLoading &&
-          !intentError && <p className="mt-5 text-sm text-slate-600">Enter your details, then continue to load payment options.</p>
-        )}
+        ) : null}
       </section>
     </div>
   );
