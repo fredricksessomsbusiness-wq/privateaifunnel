@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import type { UtmParams } from "@/lib/utm";
-import { sendOwnerLeadSms } from "@/lib/notify";
+import { sendOwnerLeadPush } from "@/lib/notify";
 
 interface CaptureLeadBody {
   externalId: string;
@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      await sendOwnerLeadSms({ email, phone, utms });
-    } catch (smsError) {
-      console.error("Lead SMS alert failed", smsError);
+      await sendOwnerLeadPush({ email, phone, utms });
+    } catch (pushError) {
+      console.error("Lead push alert failed", pushError);
     }
 
     return NextResponse.json({ success: true });

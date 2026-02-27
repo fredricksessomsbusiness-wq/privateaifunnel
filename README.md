@@ -65,11 +65,9 @@
 ## 5.1) Instant Lead Alert Setup (Call Within 60 Seconds)
 1. Checkout now requires `email + phone + consent` before payment options are shown.
 2. Leads are captured in Supabase `leads` table via [`app/api/leads/capture/route.ts`](/Users/ricksessoms/Desktop/Mac%20-%20Code%20Box%20(VS%20code)/Low%20Ticket%20Funnel%20-%20Private%20Ai/app/api/leads/capture/route.ts).
-3. Configure Twilio env vars for instant SMS to your phone:
-   - `TWILIO_ACCOUNT_SID`
-   - `TWILIO_AUTH_TOKEN`
-   - `TWILIO_FROM_NUMBER`
-   - `OWNER_ALERT_PHONE`
+3. Configure Pushover env vars for instant phone push alerts:
+   - `PUSHOVER_APP_TOKEN`
+   - `PUSHOVER_USER_KEY`
 4. Optional but recommended for email reliability:
    - `RESEND_FROM_EMAIL` (verified sender/domain in Resend)
 
@@ -102,7 +100,7 @@
 6. Lead speed-to-contact:
    - Enter checkout details with phone.
    - Confirm a new row appears in `leads`.
-   - Confirm SMS alert is received on `OWNER_ALERT_PHONE`.
+   - Confirm push alert appears on your phone via Pushover.
 
 ## Local Development
 1. Install deps: `npm install`

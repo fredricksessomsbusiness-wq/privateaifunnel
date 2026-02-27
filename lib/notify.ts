@@ -20,32 +20,29 @@ function buildLeadAlertMessage({ email, phone, utms }: LeadAlertInput): string {
   return `NEW FUNNEL LEAD\nEmail: ${email}\nPhone: ${phone}\nSource: ${source}\nCampaign: ${campaign}\nCall now.`;
 }
 
-export async function sendOwnerLeadSms(input: LeadAlertInput): Promise<void> {
-  const accountSid = getRequired("TWILIO_ACCOUNT_SID");
-  const authToken = getRequired("TWILIO_AUTH_TOKEN");
-  const from = getRequired("TWILIO_FROM_NUMBER");
-  const to = getRequired("OWNER_ALERT_PHONE");
+export async function sendOwnerLeadPush(input: LeadAlertInput): Promise<void> {
+  const token = getRequired("PUSHOVER_APP_TOKEN");
+  const user = getRequired("PUSHOVER_USER_KEY");
 
   const body = new URLSearchParams({
-    From: from,
-    To: to,
-    Body: buildLeadAlertMessage(input),
+    token,
+    user,
+    title: "New Funnel Lead",
+    message: buildLeadAlertMessage(input),
+    priority: "1",
+    sound: "siren",
   });
 
-  const response = await fetch(
-    `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString("base64")}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: body.toString(),
-    }
-  );
+  const response = await fetch("https://api.pushover.net/1/messages.json", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body.toString(),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Twilio SMS failed: ${errorText}`);
+    throw new Error(`Pushover push failed: ${errorText}`);
   }
 }
