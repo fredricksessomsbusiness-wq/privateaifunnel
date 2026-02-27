@@ -161,6 +161,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [intentLoading, setIntentLoading] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
+  const [capturedLeadId, setCapturedLeadId] = useState<string | null>(null);
 
   const selectedBumpList = useMemo(
     () => BUMP_PRODUCTS.filter((product) => selectedBumps[product]),
@@ -184,11 +185,66 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
   const normalizedFirstName = firstName.trim();
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPhone = normalizePhone(phone);
+  const leadExternalId = `${normalizedEmail}|${normalizedPhone}`;
   const readyForPaymentMethods =
     normalizedFirstName.length > 0 &&
     normalizedEmail.includes("@") &&
     normalizedPhone.length >= 10 &&
     consentMarketing;
+
+  useEffect(() => {
+    if (!readyForPaymentMethods) {
+      return;
+    }
+
+    if (capturedLeadId === leadExternalId) {
+      return;
+    }
+
+    let isCanceled = false;
+
+    const captureLead = async () => {
+      try {
+        const utms = readStoredUtms();
+        const response = await fetch("/api/leads/capture", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            externalId: leadExternalId,
+            firstName: normalizedFirstName,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            consentMarketing,
+            utms,
+          }),
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        if (!isCanceled) {
+          setCapturedLeadId(leadExternalId);
+        }
+      } catch {
+        // Non-blocking: checkout can continue even if lead notification fails.
+      }
+    };
+
+    void captureLead();
+
+    return () => {
+      isCanceled = true;
+    };
+  }, [
+    readyForPaymentMethods,
+    capturedLeadId,
+    leadExternalId,
+    normalizedFirstName,
+    normalizedEmail,
+    normalizedPhone,
+    consentMarketing,
+  ]);
 
   useEffect(() => {
     if (!readyForPaymentMethods) {

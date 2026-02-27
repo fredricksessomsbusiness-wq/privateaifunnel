@@ -49,11 +49,16 @@ export async function POST(request: NextRequest) {
       .eq("external_id", externalId)
       .maybeSingle();
 
+    const utms = body.utms ?? {};
     if (existing.data?.id) {
+      try {
+        await sendOwnerLeadPush({ firstName, email, phone, utms });
+      } catch (pushError) {
+        console.error("Lead push alert failed for duplicate lead", pushError);
+      }
+
       return NextResponse.json({ success: true, duplicate: true });
     }
-
-    const utms = body.utms ?? {};
 
     const { error: leadError } = await supabaseAdmin.from("leads").insert({
       external_id: externalId,
