@@ -70,7 +70,7 @@ export default function SalesPage() {
       <section className="section-wrap section-pad grid items-start gap-10 lg:grid-cols-2">
         <div>
           <h1 className="font-heading text-4xl leading-tight text-brand-text md:text-5xl lg:text-6xl">
-            The Step-by-Step Blueprint to Get Private AI Automation Running in 24–48 Hours,{" "}
+            The Step-by-Step Blueprint to <strong>Get Private AI Automation</strong> Running in 24–48 Hours,{" "}
             <span className="decoration-2 decoration-red-500 line-through">No Code Required</span>,{" "}
             <span className="decoration-2 decoration-red-500 line-through">No Agency Invoice</span>.
           </h1>
