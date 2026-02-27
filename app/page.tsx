@@ -70,8 +70,9 @@ export default function SalesPage() {
       <section className="section-wrap section-pad grid items-start gap-10 lg:grid-cols-2">
         <div>
           <h1 className="font-heading text-4xl leading-tight text-brand-text md:text-5xl lg:text-6xl">
-            <strong>AI Agencies Charge $2,000+ to Set This Up.</strong> This Blueprint Lets You Do It Yourself in
-            24–48 Hours for $27.
+            The Step-by-Step Blueprint to Get Private AI Automation Running in 24–48 Hours,{" "}
+            <span className="decoration-2 decoration-red-500 line-through">No Code Required</span>,{" "}
+            <span className="decoration-2 decoration-red-500 line-through">No Agency Invoice</span>.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-slate-700">
             You have clients, deadlines, and a full calendar. This blueprint gets your private AI running in 24–48
