@@ -77,12 +77,6 @@ export default function SalesPage() {
             <span className="mx-3 text-slate-400">•</span>
             <span className="decoration-2 decoration-red-500 line-through">No Agency Invoice</span>
           </p>
-          <p className="mt-6 max-w-2xl text-lg text-slate-700">
-            You have clients, deadlines, and a full calendar. <strong>This blueprint gives you a simple path to launch fast.</strong>
-          </p>
-          <p className="mt-3 max-w-2xl text-lg text-slate-700">
-            Set it up once. Stay in control. Let it run.
-          </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {credibilityChips.map((chip) => (
               <span
@@ -100,23 +94,11 @@ export default function SalesPage() {
 
         <div className="card p-6 md:p-8">
           <p className="text-xl font-semibold text-brand-text">What You Get for $27</p>
-          <ul className="mt-5 space-y-3 text-slate-700">
-            <li className="flex gap-2">
-              <span className="text-brand-accent">✓</span>
-              The complete private AI setup blueprint — <strong>follow it once, your automation runs forever</strong>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-brand-accent">✓</span>
-              4 ready workflow templates: <strong>research, meeting notes, calendar management, and email filtering</strong>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-brand-accent">✓</span>
-              Zero-to-Running checklist for any device
-            </li>
-            <li className="flex gap-2">
-              <span className="text-brand-accent">✓</span>
-              Safety-first deployment steps to protect your clients and reputation
-            </li>
+          <ul className="mt-5 list-disc space-y-3 pl-6 text-base leading-relaxed text-slate-700 marker:text-brand-accent">
+            <li>The complete private AI setup blueprint that you follow once and keep for life</li>
+            <li>4 ready workflow templates: research, meeting notes, calendar management, and email filtering</li>
+            <li>Zero-to-Running checklist for any device</li>
+            <li>Safety-first deployment steps to protect your clients and reputation</li>
           </ul>
           <Link className="brand-btn mt-6 w-full" href="/checkout" onClick={handleCtaClick}>
             Get Instant Access — $27 →
