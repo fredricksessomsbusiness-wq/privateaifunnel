@@ -51,7 +51,7 @@ function ThankYouContent() {
         <div className="mt-8">
           <p className="text-lg font-semibold text-brand-text">What happens next</p>
           <ol className="mt-3 space-y-2 text-slate-700">
-            <li>1. Tap "Access Your Portal on Whop".</li>
+            <li>1. Tap &quot;Access Your Portal on Whop&quot;.</li>
             <li>2. Log in with the exact email address used at checkout.</li>
             <li>3. Your purchases unlock automatically.</li>
             <li>4. Start with the Zero-to-Running checklist.</li>
