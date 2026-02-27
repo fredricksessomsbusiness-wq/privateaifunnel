@@ -70,15 +70,19 @@ export default function SalesPage() {
       <section className="section-wrap section-pad grid items-start gap-10 lg:grid-cols-2">
         <div>
           <h1 className="font-heading text-4xl leading-tight text-brand-text md:text-5xl lg:text-6xl">
-            The Step-by-Step Blueprint to <strong>Get Private AI Automation</strong> Running in 24–48 Hours,{" "}
-            <span className="decoration-2 decoration-red-500 line-through">No Code Required</span>,{" "}
-            <span className="decoration-2 decoration-red-500 line-through">No Agency Invoice</span>.
+            The Step-by-Step Blueprint to <strong>Get Private AI Automation Running</strong> in 24–48 Hours.
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-slate-700">
-            You have clients, deadlines, and a full calendar. This blueprint gets your private AI running in 24–48
-            hours with <strong>no code, no IT team, and no wasted weekend.</strong>
+          <p className="mt-4 max-w-2xl text-2xl leading-tight text-brand-text">
+            <span className="decoration-2 decoration-red-500 line-through">No Code Required</span>
+            <span className="mx-3 text-slate-400">•</span>
+            <span className="decoration-2 decoration-red-500 line-through">No Agency Invoice</span>
           </p>
-          <p className="mt-3 max-w-2xl text-lg text-slate-700">Follow the steps once. After that, it runs itself.</p>
+          <p className="mt-6 max-w-2xl text-lg text-slate-700">
+            You have clients, deadlines, and a full calendar. <strong>This blueprint gives you a simple path to launch fast.</strong>
+          </p>
+          <p className="mt-3 max-w-2xl text-lg text-slate-700">
+            Set it up once. Stay in control. Let it run.
+          </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {credibilityChips.map((chip) => (
               <span
