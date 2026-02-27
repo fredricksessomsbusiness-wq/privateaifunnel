@@ -10,9 +10,18 @@ import { readStoredUtms } from "@/lib/utm";
 import { formatUsd } from "@/lib/currency";
 
 const bumpDescriptions: Record<(typeof BUMP_PRODUCTS)[number], string> = {
-  bump1: "50 copy-paste automation prompts for professional services teams.",
-  bump2: "Lifetime access to operators community and monthly drops.",
-  bump3: "Security checklist to harden your private AI deployment.",
+  bump1:
+    "Once your setup is live, these 50 prompts make it immediately useful for real work: research, meeting prep, email drafting, calendar management, and document review.",
+  bump2:
+    "A private community with monthly automation template drops, weekly office hours, and early access to new products. One payment. In forever.",
+  bump3:
+    "A one-page checklist showing common setup exposure points so your private AI is safe before it goes live.",
+};
+
+const bumpHeadlines: Record<(typeof BUMP_PRODUCTS)[number], string> = {
+  bump1: "Add 50 Done-For-You Prompts for $17",
+  bump2: "Lock In Lifetime Access Now — Never Pay Monthly",
+  bump3: "Run This 10-Minute AI Security Audit for $17",
 };
 
 interface CheckoutFormProps {
@@ -129,7 +138,9 @@ function PaymentPane({
       </button>
 
       <p className="mt-4 text-sm font-medium text-slate-700">256-bit SSL encryption</p>
-      <p className="text-sm text-slate-500">30-day money-back guarantee</p>
+      <p className="text-sm text-slate-500">
+        <strong>30-day money-back guarantee — no questions asked</strong>
+      </p>
       {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
     </form>
   );
@@ -228,24 +239,29 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
       <section className="card p-5 sm:p-6 md:p-8">
-        <h2 className="font-heading text-2xl text-brand-text sm:text-3xl">Order Summary</h2>
+        <h2 className="font-heading text-2xl text-brand-text sm:text-3xl">Your Order</h2>
 
         <div className="mt-5 rounded-xl border border-brand-border bg-brand-tint p-4">
-          <p className="font-semibold text-brand-text">{PRODUCT_LABELS.entry}</p>
-          <p className="text-sm text-slate-600">Entry Access</p>
+          <p className="font-semibold text-brand-text">Private AI Automation — The Self-Install Blueprint</p>
+          <p className="text-sm text-slate-600">
+            Complete setup blueprint + 4 workflow templates + Zero-to-Running checklist + safety-first deployment
+            sequence
+          </p>
           <p className="mt-1 font-semibold text-brand-accent">{formatUsd(PRODUCT_AMOUNTS.entry)}</p>
         </div>
 
         <div className="mt-5 space-y-3">
           <BumpToggle
             title="Private AI Prompt Vault"
+            headline={bumpHeadlines.bump1}
             description={bumpDescriptions.bump1}
             priceLabel={formatUsd(PRODUCT_AMOUNTS.bump1)}
             checked={selectedBumps.bump1}
             onToggle={(checked) => toggleBump("bump1", checked)}
           />
           <BumpToggle
-            title="Operators Circle Lifetime Access"
+            title="Operators Circle — Lifetime Access"
+            headline={bumpHeadlines.bump2}
             description={bumpDescriptions.bump2}
             priceLabel={formatUsd(PRODUCT_AMOUNTS.bump2)}
             checked={selectedBumps.bump2}
@@ -253,6 +269,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
           />
           <BumpToggle
             title="Private AI Security Checklist"
+            headline={bumpHeadlines.bump3}
             description={bumpDescriptions.bump3}
             priceLabel={formatUsd(PRODUCT_AMOUNTS.bump3)}
             checked={selectedBumps.bump3}
@@ -265,7 +282,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
             <span>Total</span>
             <span>{formatUsd(totalCents)}</span>
           </p>
-          <p className="mt-4 text-sm text-slate-600">What you&apos;re getting:</p>
+          <p className="mt-4 text-sm text-slate-600">Everything in your order:</p>
           <ul className="mt-2 space-y-2 text-sm text-slate-700">
             {summaryProducts.map((product) => (
               <li key={product} className="flex gap-2">
@@ -278,7 +295,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
       </section>
 
       <section className="card p-5 sm:p-6 md:p-8">
-        <h2 className="font-heading text-2xl text-brand-text sm:text-3xl">Payment</h2>
+        <h2 className="font-heading text-2xl text-brand-text sm:text-3xl">Complete Your Order</h2>
         <div className="mt-5 space-y-4">
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-slate-700">First Name</span>
@@ -323,16 +340,12 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
               onChange={(event) => setConsentMarketing(event.target.checked)}
               className="mt-1 h-4 w-4 accent-brand-accent"
             />
-            <span>
-              I consent to be contacted by phone/SMS about my request and understand message/data rates may apply.
-            </span>
+            <span>I consent to be contacted by phone/SMS and understand message/data rates may apply.</span>
           </label>
         </div>
 
         {!readyForPaymentMethods ? (
-          <p className="mt-5 text-sm text-slate-600">
-            Enter your first name, email, phone, and consent to load payment options.
-          </p>
+          <p className="mt-5 text-sm text-slate-600">Enter your details above to load secure payment options.</p>
         ) : null}
 
         {intentLoading ? <p className="mt-5 text-sm text-slate-600">Loading payment options...</p> : null}

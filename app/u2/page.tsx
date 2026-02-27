@@ -62,32 +62,52 @@ function UpsellTwoContent() {
 
   return (
     <main className="section-wrap section-pad">
-      <div className="mx-auto max-w-[720px]">
-        <p className="text-sm font-semibold uppercase tracking-wide text-brand-accent">Step 2 of 2 — One-Time Offer</p>
+      <div className="mx-auto max-w-[820px]">
+        <p className="text-sm font-semibold uppercase tracking-wide text-brand-accent">
+          Step 2 of 2 — One-Time Offer (this screen disappears when you leave)
+        </p>
+
         <h1 className="mt-4 font-heading text-4xl leading-tight text-brand-text md:text-5xl">
-          Last Step: The Fastest Way to Get Your Private AI Running — We Do It For You
+          <strong>Last Step: Skip the Setup Entirely — We Build Your Entire Private AI Stack For You.</strong>
         </h1>
+        <p className="mt-3 text-lg text-slate-700">
+          You bought the blueprint. <strong>This is the option where you never open it.</strong>
+        </p>
+
+        <div className="mt-6 space-y-4 text-base leading-relaxed text-slate-700">
+          <p>
+            The blueprint gets most professionals live in 24–48 hours. But it still takes focused work and decisions.
+          </p>
+          <p>
+            <strong>This offer removes all of that.</strong> We map your workflows, install everything in your
+            environment, harden security, and hand it over fully running.
+          </p>
+        </div>
+
         <div className="mt-8">
           <UpsellCard
             productName="Done-For-You Installation"
-            heading="We Install Your Private AI Automation For You — In Your Business, Your Life, or Both. You Do Nothing."
+            heading="We Install Your Complete Private AI Automation Stack — For Your Business, Your Personal Life, or Both"
             features={[
-              "Environment setup handled end-to-end",
-              "Private AI stack installed in your infrastructure",
-              "Workflow customization for your use cases",
-              "Security and hardening pass included",
-              "Role-based access and permissions setup",
-              "Guided handoff and launch support",
+              "Private onboarding call mapped to your real workflows",
+              "Full end-to-end setup of tools, agents, and integrations",
+              "Workflow customization for your specific use cases",
+              "Security hardening pass included before handoff",
+              "Role-based access and permissions configured",
+              "30-day post-installation support included",
             ]}
-            guarantee="Money-back if you're not live within 30 days"
-            priceLine={formatUsd(PRODUCT_AMOUNTS.upsell2)}
-            acceptText="Yes — Do It For Me ($999) →"
-            declineText="No thanks, I'll handle the setup myself →"
+            guarantee="If your automation is not live within 30 days of onboarding, you get a full refund."
+            priceLine={<strong>{formatUsd(PRODUCT_AMOUNTS.upsell2)}</strong>}
+            acceptText="Yes — Install It For Me ($999) →"
+            declineText="No thanks — I'll handle the setup myself →"
             isLoading={loading}
             error={error}
             onAccept={handleAccept}
             onDecline={handleDecline}
           />
+          <p className="mt-3 text-sm text-slate-500">
+            Agencies charge $2,000–$5,000+ for this setup. This is the done-for-you version with full ownership.
+          </p>
         </div>
       </div>
     </main>

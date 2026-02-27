@@ -47,6 +47,7 @@ create table if not exists leads (
   utm_term text,
   created_at timestamptz default now()
 );
+alter table leads add column if not exists first_name text;
 
 alter table users enable row level security;
 alter table purchases enable row level security;

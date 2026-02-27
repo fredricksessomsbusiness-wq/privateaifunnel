@@ -2,6 +2,7 @@
 
 interface BumpToggleProps {
   title: string;
+  headline?: string;
   description: string;
   priceLabel: string;
   checked: boolean;
@@ -10,6 +11,7 @@ interface BumpToggleProps {
 
 export default function BumpToggle({
   title,
+  headline,
   description,
   priceLabel,
   checked,
@@ -24,6 +26,7 @@ export default function BumpToggle({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="pr-2">
           <h3 className="text-base font-semibold leading-snug text-brand-text">{title}</h3>
+          {headline ? <p className="mt-1 text-sm font-semibold leading-snug text-brand-text">{headline}</p> : null}
           <p className="mt-1 text-sm leading-relaxed text-slate-600">{description}</p>
           <p className="mt-2 text-sm font-semibold text-brand-accent">{priceLabel}</p>
         </div>
@@ -38,7 +41,7 @@ export default function BumpToggle({
               : "border border-brand-border bg-white text-brand-accent hover:bg-brand-tint"
           }`}
         >
-          {checked ? "Added to Order" : "Add to Order"}
+          {checked ? "Added ✓" : "Add to Order"}
         </button>
       </div>
     </div>

@@ -19,7 +19,12 @@ body {
 }
 
 body {
-  background: var(--brand-bg);
+  background-color: var(--brand-bg);
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: top left;
   color: var(--brand-text);
   font-family: var(--font-inter), sans-serif;
   line-height: 1.6;

@@ -62,35 +62,65 @@ function UpsellOneContent() {
 
   return (
     <main className="section-wrap section-pad">
-      <div className="mx-auto max-w-[720px]">
-        <p className="text-sm font-semibold uppercase tracking-wide text-brand-accent">Step 1 of 2 — One-Time Offer</p>
+      <div className="mx-auto max-w-[820px]">
+        <p className="text-sm font-semibold uppercase tracking-wide text-brand-accent">
+          Step 1 of 2 — One-Time Offer (this screen disappears when you leave)
+        </p>
+
         <h1 className="mt-4 font-heading text-4xl leading-tight text-brand-text md:text-5xl">
-          Wait — Your Order Is Being Processed. Add This One-Time Upgrade Before You Go:
+          <strong>Before You Go — There&apos;s Something Most People Don&apos;t Understand Until It&apos;s Too Late.</strong>
         </h1>
+
+        <div className="mt-6 space-y-4 text-base leading-relaxed text-slate-700">
+          <p>
+            There&apos;s a difference between automation and agents. <strong>Automation</strong> does one task. An
+            <strong> agent</strong> can run many automations in sequence and make decisions.
+          </p>
+          <p>
+            If you run research, email filtering, meeting notes, calendar management, and data workflows, that means
+            multiple agents running at once. If you cannot see what each one is doing, you lose control.
+          </p>
+          <p>
+            <strong>The dashboard below solves that.</strong>
+          </p>
+        </div>
+
+        <h2 className="mt-8 font-heading text-3xl leading-tight text-brand-text md:text-4xl">
+          <strong>
+            One Dashboard to See, Control and Manage Every Agent, Every Automation and Every Piece of Data in Your
+            Private AI Stack
+          </strong>
+        </h2>
+        <p className="mt-3 text-lg text-slate-700">
+          The blueprint gets you live. <strong>This keeps you in control of everything after.</strong>
+        </p>
+
         <div className="mt-8">
           <UpsellCard
             productName="Private Agent OS Dashboard"
-            heading="Your Private Agent OS: One Dashboard to Run, Manage & Control Every AI Automation You Own"
+            heading="Your Private Agent OS: One Screen for Every Agent, Every Automation and Every Data Flow You Own"
             features={[
-              "Centralized dashboard for all automations",
-              "Pipeline visibility across tasks and agents",
-              "Execution controls with role-based visibility",
-              "Prebuilt automation modules for fast launch",
-              "Operational reporting and performance tracking",
+              "See every agent status in one place: live, paused, or stalled",
+              "View and control every automation each agent is running",
+              "Track data flow by agent and stop risky behavior fast",
+              "Update prompts and modules without digging through files",
+              "Add pre-built modules so new agents go live in minutes",
+              "Nothing runs in your system without your knowledge",
             ]}
             priceLine={
               <span>
                 <span className="mr-2 text-slate-500 line-through">{formatUsd(49700)}</span>
-                Today Only: {formatUsd(PRODUCT_AMOUNTS.upsell1)}
+                <strong>Today Only: {formatUsd(PRODUCT_AMOUNTS.upsell1)}</strong>
               </span>
             }
-            acceptText="Yes — Add the Agent OS for $253 →"
-            declineText="No thanks, I'll manage my automations manually →"
+            acceptText="Yes — Add the Agent OS Dashboard for $253 →"
+            declineText="No thanks — I'll manage my agents manually →"
             isLoading={loading}
             error={error}
             onAccept={handleAccept}
             onDecline={handleDecline}
           />
+          <p className="mt-3 text-sm text-slate-500">This offer is only available on this page.</p>
         </div>
       </div>
     </main>

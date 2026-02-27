@@ -7,32 +7,48 @@ import Nav from "@/components/Nav";
 import { pixelInitiateCheckout, pixelViewContent } from "@/lib/pixel";
 import { captureUtmsFromUrl, storeUtms } from "@/lib/utm";
 
-const credibilityChips = ["Zero Cloud Leaks", "No Subscriptions", "Any Machine, Any OS", "60-Minute Setup"];
+const credibilityChips = [
+  "You Control the Access. Not a Vendor.",
+  "No Costly Subscriptions",
+  "Works on Mac, Windows & Mobile",
+  "Live in 24–48 Hours",
+];
+
+const whoThisIsFor = [
+  "For estate and family law attorneys who can't afford a data breach",
+  "For tax advisors and CPAs handling financials that need strict access control",
+  "For independent consultants who want AI leverage without an agency invoice",
+  "For financial planners and RIAs with strict client confidentiality obligations",
+  "For operations managers and department heads who need AI running without IT sign-off",
+  "For corporate project managers drowning in meetings, emails and reporting",
+  "For HR directors and talent leads handling sensitive compensation and candidate data",
+  "For any business owner or professional who wants to control how their AI runs, what it costs, and who can access it",
+];
 
 const faqItems = [
   {
     q: "Is this fully private?",
-    a: "Yes. The framework is designed for local/private execution so sensitive client data stays under your control.",
+    a: "You own the infrastructure, you manage the access, and you're not subject to a vendor's terms.",
   },
   {
     q: "How long does setup take?",
-    a: "Most professionals complete setup in about 60 minutes using the included walkthrough.",
+    a: "Most professionals are live within 24–48 hours. The blueprint is built for focused sessions around your schedule.",
   },
   {
     q: "Do I need coding experience?",
-    a: "No coding required. Everything is documented in plain language with copy-paste implementation steps.",
+    a: "No. Every step is plain language with copy-paste instructions.",
   },
   {
-    q: "What kind of hardware is needed?",
-    a: "Any modern Mac or Windows machine works. Optional performance upgrades are outlined in the guide.",
+    q: "What hardware do I need?",
+    a: "Any modern Mac, Windows machine, or mobile phone.",
   },
   {
-    q: "Is there ongoing subscription cost?",
-    a: "No recurring software subscription is required for the core stack described in this offer.",
+    q: "Is there an ongoing subscription?",
+    a: "No recurring cost for the core stack. Buy it once, own it.",
   },
   {
-    q: "Is there a refund policy?",
-    a: "Yes. You are covered by a 30-day money-back guarantee if this is not the right fit for your use case.",
+    q: "What if it's not right for me?",
+    a: "You have a 30-day money-back guarantee.",
   },
 ];
 
@@ -54,12 +70,14 @@ export default function SalesPage() {
       <section className="section-wrap section-pad grid items-start gap-10 lg:grid-cols-2">
         <div>
           <h1 className="font-heading text-4xl leading-tight text-brand-text md:text-5xl lg:text-6xl">
-            How to Get Your AI Running Privately in 60 Minutes — Without Touching a Single Line of Code
+            <strong>AI Agencies Charge $2,000+ to Set This Up.</strong> This Blueprint Lets You Do It Yourself in
+            24–48 Hours for $27.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-slate-700">
-            The step-by-step blueprint for lawyers, consultants and accountants who want owned AI automation:
-            zero cloud exposure, zero subscriptions, zero IT team required.
+            You have clients, deadlines, and a full calendar. This blueprint gets your private AI running in 24–48
+            hours with <strong>no code, no IT team, and no wasted weekend.</strong>
           </p>
+          <p className="mt-3 max-w-2xl text-lg text-slate-700">Follow the steps once. After that, it runs itself.</p>
           <div className="mt-6 flex flex-wrap gap-2">
             {credibilityChips.map((chip) => (
               <span
@@ -76,23 +94,23 @@ export default function SalesPage() {
         </div>
 
         <div className="card p-6 md:p-8">
-          <p className="text-xl font-semibold text-brand-text">Start Today for $27</p>
+          <p className="text-xl font-semibold text-brand-text">What You Get for $27</p>
           <ul className="mt-5 space-y-3 text-slate-700">
             <li className="flex gap-2">
               <span className="text-brand-accent">✓</span>
-              Private AI 60-minute setup blueprint
+              The complete private AI setup blueprint — <strong>follow it once, your automation runs forever</strong>
             </li>
             <li className="flex gap-2">
               <span className="text-brand-accent">✓</span>
-              Local workflow templates for legal, finance and consulting
+              4 ready workflow templates: <strong>research, meeting notes, calendar management, and email filtering</strong>
             </li>
             <li className="flex gap-2">
               <span className="text-brand-accent">✓</span>
-              Tool stack and environment checklist
+              Zero-to-Running checklist for any device
             </li>
             <li className="flex gap-2">
               <span className="text-brand-accent">✓</span>
-              Deployment sequence with security controls
+              Safety-first deployment steps to protect your clients and reputation
             </li>
           </ul>
           <Link className="brand-btn mt-6 w-full" href="/checkout" onClick={handleCtaClick}>
@@ -101,50 +119,73 @@ export default function SalesPage() {
         </div>
       </section>
 
-      <section className="bg-white py-8">
+      <section className="bg-white py-10 md:py-14">
         <div className="section-wrap">
-          <p className="text-center text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Trusted by professionals in legal, finance & consulting
+          <p className="text-lg font-semibold text-brand-text">
+            <strong>487,000 individuals and businesses across the US</strong> deployed private AI setups in the last
+            12 months.
           </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-5">
-            {["Jordan P. — Attorney", "Nina C. — CPA", "Arman D. — Consultant", "Claire K. — Advisor", "Luis T. — Partner"].map(
-              (quote) => (
-                <div key={quote} className="card p-4 text-sm text-slate-700">
-                  {quote}
-                </div>
-              )
-            )}
-          </div>
+          <p className="mt-3 text-slate-700">
+            The goal is not just to be early. <strong>It is to do it right.</strong>
+          </p>
+          <ul className="mt-6 grid gap-2 text-sm text-slate-700 md:grid-cols-2">
+            {whoThisIsFor.map((item) => (
+              <li key={item} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
       <section className="section-wrap section-pad">
-        <h2 className="font-heading text-3xl text-brand-text md:text-5xl">Every AI Tool You&apos;re Using Is Leaking Your Data</h2>
+        <h2 className="font-heading text-3xl text-brand-text md:text-5xl">
+          <strong>Two Problems Nobody Warns You About When You Start Using AI at Work</strong>
+        </h2>
         <p className="mt-5 max-w-3xl text-lg text-slate-700">
-          Professionals handling sensitive records are exposing private documents to third-party platforms every
-          time they paste confidential text into cloud AI products.
+          Most people think the risk is privacy. That is real. But the first problem costs people even more.
         </p>
+
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {[
-            "Client communications are processed on external infrastructure",
-            "Uncontrolled plugins and app integrations copy your data",
-            "Policy violations create legal and compliance risk",
-          ].map((point) => (
-            <div key={point} className="card p-5">
-              <p className="text-2xl">⚠</p>
-              <p className="mt-3 text-slate-700">{point}</p>
-            </div>
-          ))}
+          <div className="card p-5">
+            <p className="text-lg font-semibold text-brand-text">The AI That Only Works When You Watch It</p>
+            <p className="mt-2 text-slate-700">
+              If your AI breaks when you step away, it is not automation. This blueprint is built for stable workflows.
+            </p>
+          </div>
+          <div className="card p-5">
+            <p className="text-lg font-semibold text-brand-text">Setup Risk Nobody Mentions</p>
+            <p className="mt-2 text-slate-700">
+              A private AI set up wrong becomes a liability. This guide includes a safety-first sequence to avoid that.
+            </p>
+          </div>
+          <div className="card p-5">
+            <p className="text-lg font-semibold text-brand-text">No Control Over Spend</p>
+            <p className="mt-2 text-slate-700">
+              Cloud bills can grow fast. With this setup, <strong>you set the limits and control the cost.</strong>
+            </p>
+          </div>
         </div>
       </section>
 
       <section className="bg-white py-16 md:py-20 lg:py-24">
         <div className="section-wrap">
-          <h2 className="font-heading text-3xl text-brand-text md:text-5xl">Your AI. Your Data. Your Infrastructure.</h2>
+          <h2 className="font-heading text-3xl text-brand-text md:text-5xl">
+            <strong>Own Your AI. Own Your Data. Own Your Results.</strong>
+          </h2>
+          <p className="mt-5 max-w-3xl text-lg text-slate-700">
+            Not a course. A deployment blueprint. Follow the steps and get live while others are still stuck in
+            tutorials.
+          </p>
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {["Research Workflow", "Meeting Notes Workflow", "Calendar Workflow", "Inbox Workflow"].map((item) => (
+            {[
+              "Research — summarized automatically",
+              "Meeting Notes — action items right after calls",
+              "Calendar Management — time protected for real work",
+              "Email Filtering — only high-priority messages surface",
+            ].map((item) => (
               <div key={item} className="card p-5">
-                <p className="text-sm font-semibold uppercase tracking-wide text-brand-accent">Template</p>
+                <p className="text-sm font-semibold uppercase tracking-wide text-brand-accent">Workflow</p>
                 <p className="mt-2 text-lg font-semibold text-brand-text">{item}</p>
               </div>
             ))}
@@ -153,26 +194,41 @@ export default function SalesPage() {
       </section>
 
       <section className="section-wrap section-pad">
-        <h2 className="font-heading text-3xl text-brand-text md:text-5xl">Everything You Get for $27</h2>
+        <h2 className="font-heading text-3xl text-brand-text md:text-5xl">
+          <strong>Everything You Get for $27</strong>
+        </h2>
         <ul className="mt-8 space-y-3 text-lg text-slate-700">
-          <li className="flex gap-3"><span className="text-brand-accent">✓</span>Step-by-step private setup framework</li>
-          <li className="flex gap-3"><span className="text-brand-accent">✓</span>Tool installation checklist for any OS</li>
-          <li className="flex gap-3"><span className="text-brand-accent">✓</span>Four ready-to-use automation templates</li>
-          <li className="flex gap-3"><span className="text-brand-accent">✓</span>Security-first deployment sequence</li>
+          <li className="flex gap-3">
+            <span className="text-brand-accent">✓</span>
+            Private AI deployment blueprint with full ownership
+          </li>
+          <li className="flex gap-3">
+            <span className="text-brand-accent">✓</span>
+            Zero-to-Running checklist for any device
+          </li>
+          <li className="flex gap-3">
+            <span className="text-brand-accent">✓</span>
+            Four pre-configured templates ready day one
+          </li>
+          <li className="flex gap-3">
+            <span className="text-brand-accent">✓</span>
+            Safety-first deployment sequence to avoid exposure
+          </li>
+          <li className="flex gap-3">
+            <span className="text-brand-accent">✓</span>
+            Works on Mac, Windows, or mobile with no coding required
+          </li>
         </ul>
       </section>
 
       <section className="bg-white py-16 md:py-20 lg:py-24">
-        <div className="section-wrap grid gap-4 md:grid-cols-3">
-          {[
-            "I replaced scattered AI tools with one controlled system and cut setup time dramatically. — Maria L., Estate Lawyer",
-            "The privacy structure was exactly what our finance practice needed. — Peter A., Tax Advisor",
-            "Implementation was direct and practical. We were live the same day. — Dana R., Consulting Founder",
-          ].map((testimonial) => (
-            <blockquote key={testimonial} className="card p-5 text-slate-700">
-              {testimonial}
-            </blockquote>
-          ))}
+        <div className="section-wrap">
+          <h2 className="font-heading text-3xl text-brand-text md:text-5xl">
+            <strong>Agencies charge $2,000–$5,000+ for this setup.</strong>
+          </h2>
+          <p className="mt-5 max-w-3xl text-lg text-slate-700">
+            For $27, you get the same blueprint and keep full control. No lock-in. No recurring agency bill.
+          </p>
         </div>
       </section>
 
@@ -191,9 +247,12 @@ export default function SalesPage() {
       <section className="bg-white py-16 md:py-20 lg:py-24">
         <div className="section-wrap text-center">
           <h2 className="font-heading text-3xl text-brand-text md:text-5xl">
-            Build Your Private AI Stack Without the Guesswork
+            <strong>Set This Up Once. Own It Forever.</strong>
           </h2>
           <p className="mt-4 text-lg text-slate-700">Instant Access — $27</p>
+          <p className="mt-1 text-sm text-slate-600">
+            30-day money-back guarantee · No costly subscriptions · Works on any device
+          </p>
           <Link className="brand-btn mt-6" href="/checkout" onClick={handleCtaClick}>
             Get Instant Access — $27 →
           </Link>
