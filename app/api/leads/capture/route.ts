@@ -5,6 +5,7 @@ import { sendOwnerLeadPush } from "@/lib/notify";
 
 interface CaptureLeadBody {
   externalId: string;
+  firstName: string;
   email: string;
   phone: string;
   consentMarketing: boolean;
@@ -18,12 +19,16 @@ function normalizePhone(input: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as CaptureLeadBody;
+    const firstName = body.firstName?.trim();
     const email = body.email?.trim().toLowerCase();
     const phone = normalizePhone(body.phone ?? "");
     const externalId = body.externalId?.trim();
 
     if (!externalId) {
       return NextResponse.json({ error: "Missing lead id." }, { status: 400 });
+    }
+    if (!firstName) {
+      return NextResponse.json({ error: "First name is required." }, { status: 400 });
     }
 
     if (!email || !email.includes("@")) {
@@ -52,6 +57,7 @@ export async function POST(request: NextRequest) {
 
     const { error: leadError } = await supabaseAdmin.from("leads").insert({
       external_id: externalId,
+      first_name: firstName,
       email,
       phone,
       consent_marketing: true,
@@ -68,14 +74,14 @@ export async function POST(request: NextRequest) {
 
     const { error: userError } = await supabaseAdmin
       .from("users")
-      .upsert({ email, phone }, { onConflict: "email" });
+      .upsert({ first_name: firstName, email, phone }, { onConflict: "email" });
 
     if (userError) {
       throw new Error(userError.message);
     }
 
     try {
-      await sendOwnerLeadPush({ email, phone, utms });
+      await sendOwnerLeadPush({ firstName, email, phone, utms });
     } catch (pushError) {
       console.error("Lead push alert failed", pushError);
     }

@@ -63,7 +63,7 @@
 5. Deploy.
 
 ## 5.1) Instant Lead Alert Setup (Call Within 60 Seconds)
-1. Checkout now requires `email + phone + consent` before payment options are shown.
+1. Checkout now requires `first name + email + phone + consent` before payment options are shown.
 2. Leads are captured in Supabase `leads` table via [`app/api/leads/capture/route.ts`](/Users/ricksessoms/Desktop/Mac%20-%20Code%20Box%20(VS%20code)/Low%20Ticket%20Funnel%20-%20Private%20Ai/app/api/leads/capture/route.ts).
 3. Configure Pushover env vars for instant phone push alerts:
    - `PUSHOVER_APP_TOKEN`

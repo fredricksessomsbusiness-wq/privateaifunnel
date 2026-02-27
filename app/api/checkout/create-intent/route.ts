@@ -4,6 +4,7 @@ import { BUMP_PRODUCTS, PRODUCT_AMOUNTS, type ProductType } from "@/lib/products
 import type { UtmParams } from "@/lib/utm";
 
 interface CreateIntentBody {
+  firstName: string;
   email: string;
   phone: string;
   bumps: ProductType[];
@@ -13,10 +14,14 @@ interface CreateIntentBody {
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as CreateIntentBody;
+    const firstName = body.firstName?.trim();
     const email = body.email?.trim().toLowerCase();
     const phone = body.phone?.trim();
     const bumps = body.bumps ?? [];
 
+    if (!firstName) {
+      return NextResponse.json({ error: "First name is required." }, { status: 400 });
+    }
     if (!email) {
       return NextResponse.json({ error: "Email is required." }, { status: 400 });
     }
@@ -30,8 +35,12 @@ export async function POST(request: NextRequest) {
 
     const existingCustomers = await stripe.customers.list({ email, limit: 1 });
     const customer = existingCustomers.data[0]
-      ? await stripe.customers.update(existingCustomers.data[0].id, { phone })
+      ? await stripe.customers.update(existingCustomers.data[0].id, {
+          phone,
+          name: firstName,
+        })
       : await stripe.customers.create({
+          name: firstName,
           email,
           phone,
         });
@@ -47,6 +56,7 @@ export async function POST(request: NextRequest) {
       receipt_email: email,
       metadata: {
         email,
+        first_name: firstName,
         phone,
         funnel_step: "checkout",
         product_type: "entry",

@@ -101,6 +101,7 @@ function normalizePhone(input: string): string {
 }
 
 export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [consentMarketing, setConsentMarketing] = useState(false);
@@ -145,6 +146,12 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPhone = normalizePhone(phone);
+    const normalizedFirstName = firstName.trim();
+
+    if (!normalizedFirstName) {
+      setIntentError("Please enter your first name.");
+      return;
+    }
 
     if (!normalizedEmail.includes("@")) {
       setIntentError("Please enter a valid email address.");
@@ -172,6 +179,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           externalId,
+          firstName: normalizedFirstName,
           email: normalizedEmail,
           phone: normalizedPhone,
           consentMarketing,
@@ -192,6 +200,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          firstName: normalizedFirstName,
           email: normalizedEmail,
           phone: normalizedPhone,
           bumps: selectedBumpList,
@@ -272,6 +281,21 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
       <section className="card p-5 sm:p-6 md:p-8">
         <h2 className="font-heading text-2xl text-brand-text sm:text-3xl">Payment</h2>
         <div className="mt-5 space-y-4">
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-slate-700">First Name</span>
+            <input
+              type="text"
+              required
+              value={firstName}
+              onChange={(event) => {
+                setFirstName(event.target.value);
+                if (clientSecret) setClientSecret(null);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-brand-accent focus:outline-none"
+              placeholder="John"
+            />
+          </label>
+
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-slate-700">Email</span>
             <input

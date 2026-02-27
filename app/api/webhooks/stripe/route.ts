@@ -25,6 +25,7 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 type DbUser = {
   id: string;
+  first_name: string | null;
   email: string;
   phone: string | null;
   stripe_customer_id: string | null;
@@ -51,11 +52,17 @@ function parseBumps(value: string | undefined): (typeof BUMP_PRODUCTS)[number][]
   }
 }
 
-async function upsertUser(email: string, phone: string | null, customerId: string | null): Promise<DbUser> {
+async function upsertUser(
+  firstName: string | null,
+  email: string,
+  phone: string | null,
+  customerId: string | null
+): Promise<DbUser> {
   const { data, error } = await supabaseAdmin
     .from("users")
     .upsert(
       {
+        first_name: firstName,
         email,
         phone,
         stripe_customer_id: customerId,
@@ -64,7 +71,7 @@ async function upsertUser(email: string, phone: string | null, customerId: strin
         onConflict: "email",
       }
     )
-    .select("id, email, phone, stripe_customer_id, whop_user_id")
+    .select("id, first_name, email, phone, stripe_customer_id, whop_user_id")
     .single();
 
   if (error || !data) {
@@ -165,6 +172,7 @@ async function sendConfirmationEmail(email: string, products: ProductType[]): Pr
 }
 
 async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent): Promise<void> {
+  const firstName = intent.metadata.first_name?.trim() || null;
   const email = (intent.metadata.email || intent.receipt_email || "").toLowerCase();
   const phone = intent.metadata.phone?.trim() || null;
   if (!email) {
@@ -180,7 +188,7 @@ async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent): Promi
         : ["entry"];
 
   const customerId = typeof intent.customer === "string" ? intent.customer : null;
-  const user = await upsertUser(email, phone, customerId);
+  const user = await upsertUser(firstName, email, phone, customerId);
 
   const { count } = await supabaseAdmin
     .from("purchases")

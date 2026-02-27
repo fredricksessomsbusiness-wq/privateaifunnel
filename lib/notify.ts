@@ -1,6 +1,7 @@
 import type { UtmParams } from "@/lib/utm";
 
 interface LeadAlertInput {
+  firstName: string;
   email: string;
   phone: string;
   utms?: UtmParams;
@@ -14,10 +15,10 @@ function getRequired(name: string): string {
   return value;
 }
 
-function buildLeadAlertMessage({ email, phone, utms }: LeadAlertInput): string {
+function buildLeadAlertMessage({ firstName, email, phone, utms }: LeadAlertInput): string {
   const source = utms?.utm_source ?? "direct";
   const campaign = utms?.utm_campaign ?? "none";
-  return `NEW FUNNEL LEAD\nEmail: ${email}\nPhone: ${phone}\nSource: ${source}\nCampaign: ${campaign}\nCall now.`;
+  return `NEW FUNNEL LEAD\nName: ${firstName}\nPhone: ${phone}\nEmail: ${email}\nSource: ${source}\nCampaign: ${campaign}\nCall now.`;
 }
 
 export async function sendOwnerLeadPush(input: LeadAlertInput): Promise<void> {
