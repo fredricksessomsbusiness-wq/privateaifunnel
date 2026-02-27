@@ -45,7 +45,8 @@
    - `WHOP_PRODUCT_UPSELL1`
    - `WHOP_PRODUCT_UPSELL2`
 3. Set `WHOP_API_KEY`.
-4. Webhook fulfillment creates a Whop membership for each purchased product.
+4. Set `WHOP_COMPANY_ID` if your Whop key is company-scoped.
+5. Webhook fulfillment creates a Whop membership for each purchased product.
 
 ## 4) Meta Pixel Setup
 1. In Meta Events Manager, create/select your Pixel.
@@ -60,6 +61,17 @@
 3. Add all environment variables from [`.env.local`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/.env.local) into Vercel Project Settings.
 4. Set production domain and update `NEXT_PUBLIC_SITE_URL`.
 5. Deploy.
+
+## 5.1) Instant Lead Alert Setup (Call Within 60 Seconds)
+1. Checkout now requires `email + phone + consent` before payment options are shown.
+2. Leads are captured in Supabase `leads` table via [`app/api/leads/capture/route.ts`](/Users/ricksessoms/Desktop/Mac%20-%20Code%20Box%20(VS%20code)/Low%20Ticket%20Funnel%20-%20Private%20Ai/app/api/leads/capture/route.ts).
+3. Configure Twilio env vars for instant SMS to your phone:
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - `TWILIO_FROM_NUMBER`
+   - `OWNER_ALERT_PHONE`
+4. Optional but recommended for email reliability:
+   - `RESEND_FROM_EMAIL` (verified sender/domain in Resend)
 
 ## 6) Stripe Webhook Registration
 1. In Stripe Dashboard -> Developers -> Webhooks -> Add endpoint.
@@ -87,6 +99,10 @@
 5. Refund flow:
    - Refund a payment in Stripe.
    - Confirm matching access boolean flips to false and Whop membership termination is attempted for the refunded product.
+6. Lead speed-to-contact:
+   - Enter checkout details with phone.
+   - Confirm a new row appears in `leads`.
+   - Confirm SMS alert is received on `OWNER_ALERT_PHONE`.
 
 ## Local Development
 1. Install deps: `npm install`
@@ -100,8 +116,10 @@
 - [`app/u2/page.tsx`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/app/u2/page.tsx)
 - [`app/thank-you/page.tsx`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/app/thank-you/page.tsx)
 - [`app/api/checkout/create-intent/route.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/app/api/checkout/create-intent/route.ts)
+- [`app/api/leads/capture/route.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/app/api/leads/capture/route.ts)
 - [`app/api/upsell/charge/route.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/app/api/upsell/charge/route.ts)
 - [`app/api/webhooks/stripe/route.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/app/api/webhooks/stripe/route.ts)
 - [`lib/stripe.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/lib/stripe.ts)
 - [`lib/supabase.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/lib/supabase.ts)
 - [`lib/whop.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/lib/whop.ts)
+- [`lib/notify.ts`](/Users/ricksessoms/Desktop/Mac - Code Box (VS code)/Low Ticket Funnel - Private Ai/lib/notify.ts)

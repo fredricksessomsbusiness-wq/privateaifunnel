@@ -26,6 +26,7 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 type DbUser = {
   id: string;
   email: string;
+  phone: string | null;
   stripe_customer_id: string | null;
   whop_user_id: string | null;
 };
@@ -50,19 +51,20 @@ function parseBumps(value: string | undefined): (typeof BUMP_PRODUCTS)[number][]
   }
 }
 
-async function upsertUser(email: string, customerId: string | null): Promise<DbUser> {
+async function upsertUser(email: string, phone: string | null, customerId: string | null): Promise<DbUser> {
   const { data, error } = await supabaseAdmin
     .from("users")
     .upsert(
       {
         email,
+        phone,
         stripe_customer_id: customerId,
       },
       {
         onConflict: "email",
       }
     )
-    .select("id, email, stripe_customer_id, whop_user_id")
+    .select("id, email, phone, stripe_customer_id, whop_user_id")
     .single();
 
   if (error || !data) {
@@ -164,6 +166,7 @@ async function sendConfirmationEmail(email: string, products: ProductType[]): Pr
 
 async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent): Promise<void> {
   const email = (intent.metadata.email || intent.receipt_email || "").toLowerCase();
+  const phone = intent.metadata.phone?.trim() || null;
   if (!email) {
     throw new Error("Missing email in payment intent metadata");
   }
@@ -177,7 +180,7 @@ async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent): Promi
         : ["entry"];
 
   const customerId = typeof intent.customer === "string" ? intent.customer : null;
-  const user = await upsertUser(email, customerId);
+  const user = await upsertUser(email, phone, customerId);
 
   const { count } = await supabaseAdmin
     .from("purchases")

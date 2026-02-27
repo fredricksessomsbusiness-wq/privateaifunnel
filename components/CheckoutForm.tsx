@@ -1,11 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import type { Stripe } from "@stripe/stripe-js";
 import BumpToggle from "@/components/BumpToggle";
 import { BUMP_PRODUCTS, PRODUCT_AMOUNTS, PRODUCT_LABELS, type ProductType } from "@/lib/products";
-import { pixelAddToCart, pixelPurchase } from "@/lib/pixel";
+import { pixelAddToCart, pixelInitiateCheckout, pixelLead, pixelPurchase } from "@/lib/pixel";
 import { readStoredUtms } from "@/lib/utm";
 import { formatUsd } from "@/lib/currency";
 
@@ -96,8 +96,15 @@ function PaymentPane({ email, totalCents, summaryProducts }: PaymentPaneProps) {
   );
 }
 
+function normalizePhone(input: string): string {
+  return input.replace(/[^+\d]/g, "");
+}
+
 export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [consentMarketing, setConsentMarketing] = useState(false);
+
   const [selectedBumps, setSelectedBumps] = useState<Record<(typeof BUMP_PRODUCTS)[number], boolean>>({
     bump1: false,
     bump2: false,
@@ -107,6 +114,7 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [intentLoading, setIntentLoading] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
+  const [leadCaptured, setLeadCaptured] = useState(false);
 
   const selectedBumpList = useMemo(
     () => BUMP_PRODUCTS.filter((product) => selectedBumps[product]),
@@ -125,51 +133,89 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
     if (checked) {
       pixelAddToCart(product, PRODUCT_AMOUNTS[product] / 100);
     }
+
+    if (clientSecret) {
+      setClientSecret(null);
+      setIntentError("Order updated. Tap continue again to refresh payment options.");
+    }
   };
 
-  useEffect(() => {
-    const isEmailValid = email.includes("@");
-    if (!isEmailValid) {
-      setClientSecret(null);
-      setIntentError(null);
+  const handlePreparePayment = async () => {
+    setIntentError(null);
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = normalizePhone(phone);
+
+    if (!normalizedEmail.includes("@")) {
+      setIntentError("Please enter a valid email address.");
+      return;
+    }
+
+    if (normalizedPhone.length < 10) {
+      setIntentError("Please enter a valid phone number.");
+      return;
+    }
+
+    if (!consentMarketing) {
+      setIntentError("Please confirm call/SMS consent to continue.");
       return;
     }
 
     setIntentLoading(true);
-    setIntentError(null);
 
-    const timer = window.setTimeout(async () => {
-      try {
-        const response = await fetch("/api/checkout/create-intent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            bumps: selectedBumpList,
-            utms: readStoredUtms(),
-          }),
-        });
+    try {
+      const utms = readStoredUtms();
+      const externalId = `${normalizedEmail}|${normalizedPhone}`;
 
-        if (!response.ok) {
-          const payload = (await response.json()) as { error?: string };
-          throw new Error(payload.error ?? "Unable to initialize payment methods.");
-        }
+      const leadResponse = await fetch("/api/leads/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          externalId,
+          email: normalizedEmail,
+          phone: normalizedPhone,
+          consentMarketing,
+          utms,
+        }),
+      });
 
-        const payload = (await response.json()) as { clientSecret: string };
-        setClientSecret(payload.clientSecret);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Unable to initialize payment methods.";
-        setClientSecret(null);
-        setIntentError(message);
-      } finally {
-        setIntentLoading(false);
+      if (!leadResponse.ok) {
+        const payload = (await leadResponse.json()) as { error?: string };
+        throw new Error(payload.error ?? "Unable to capture lead details.");
       }
-    }, 350);
 
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [email, selectedBumpList]);
+      if (!leadCaptured) {
+        pixelLead();
+      }
+
+      const paymentResponse = await fetch("/api/checkout/create-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          phone: normalizedPhone,
+          bumps: selectedBumpList,
+          utms,
+        }),
+      });
+
+      if (!paymentResponse.ok) {
+        const payload = (await paymentResponse.json()) as { error?: string };
+        throw new Error(payload.error ?? "Unable to initialize payment methods.");
+      }
+
+      const payload = (await paymentResponse.json()) as { clientSecret: string };
+      setClientSecret(payload.clientSecret);
+      setLeadCaptured(true);
+      pixelInitiateCheckout();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to initialize checkout.";
+      setClientSecret(null);
+      setIntentError(message);
+    } finally {
+      setIntentLoading(false);
+    }
+  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
@@ -232,14 +278,52 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
               type="email"
               required
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (clientSecret) setClientSecret(null);
+              }}
               className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-brand-accent focus:outline-none"
               placeholder="you@company.com"
             />
           </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-slate-700">Phone Number</span>
+            <input
+              type="tel"
+              required
+              value={phone}
+              onChange={(event) => {
+                setPhone(event.target.value);
+                if (clientSecret) setClientSecret(null);
+              }}
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-brand-accent focus:outline-none"
+              placeholder="(555) 555-5555"
+            />
+          </label>
+
+          <label className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={consentMarketing}
+              onChange={(event) => setConsentMarketing(event.target.checked)}
+              className="mt-1 h-4 w-4 accent-brand-accent"
+            />
+            <span>
+              I consent to be contacted by phone/SMS about my request and understand message/data rates may apply.
+            </span>
+          </label>
+
+          <button
+            type="button"
+            className="brand-btn w-full"
+            onClick={handlePreparePayment}
+            disabled={intentLoading}
+          >
+            {intentLoading ? "Preparing Checkout..." : "Continue to Secure Payment"}
+          </button>
         </div>
 
-        {intentLoading ? <p className="mt-5 text-sm text-slate-600">Loading payment options...</p> : null}
         {intentError ? <p className="mt-5 text-sm text-red-600">{intentError}</p> : null}
 
         {clientSecret ? (
@@ -253,12 +337,12 @@ export default function CheckoutForm({ stripePromise }: CheckoutFormProps) {
                 },
               }}
             >
-              <PaymentPane email={email} totalCents={totalCents} summaryProducts={summaryProducts} />
+              <PaymentPane email={email.trim().toLowerCase()} totalCents={totalCents} summaryProducts={summaryProducts} />
             </Elements>
           </div>
         ) : (
           !intentLoading &&
-          !intentError && <p className="mt-5 text-sm text-slate-600">Enter your email to load payment options.</p>
+          !intentError && <p className="mt-5 text-sm text-slate-600">Enter your details, then continue to load payment options.</p>
         )}
       </section>
     </div>

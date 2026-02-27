@@ -12,6 +12,11 @@ export const pixelInitiateCheckout = (): void => {
   window.fbq!("track", "InitiateCheckout");
 };
 
+export const pixelLead = (): void => {
+  if (!canTrack()) return;
+  window.fbq!("track", "Lead");
+};
+
 export const pixelAddToCart = (productType: string, value: number): void => {
   if (!canTrack()) return;
   window.fbq!("track", "AddToCart", {

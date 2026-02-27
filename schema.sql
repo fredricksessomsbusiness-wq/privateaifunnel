@@ -3,10 +3,12 @@ create extension if not exists pgcrypto;
 create table if not exists users (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
+  phone text,
   stripe_customer_id text unique,
   whop_user_id text,
   created_at timestamptz default now()
 );
+alter table users add column if not exists phone text;
 
 create table if not exists purchases (
   id uuid primary key default gen_random_uuid(),
@@ -29,6 +31,21 @@ create table if not exists access (
   updated_at timestamptz default now()
 );
 
+create table if not exists leads (
+  id uuid primary key default gen_random_uuid(),
+  external_id text unique,
+  email text not null,
+  phone text not null,
+  consent_marketing boolean not null default false,
+  utm_source text,
+  utm_medium text,
+  utm_campaign text,
+  utm_content text,
+  utm_term text,
+  created_at timestamptz default now()
+);
+
 alter table users enable row level security;
 alter table purchases enable row level security;
 alter table access enable row level security;
+alter table leads enable row level security;

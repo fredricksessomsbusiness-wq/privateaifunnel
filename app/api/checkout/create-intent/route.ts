@@ -5,6 +5,7 @@ import type { UtmParams } from "@/lib/utm";
 
 interface CreateIntentBody {
   email: string;
+  phone: string;
   bumps: ProductType[];
   utms?: UtmParams;
 }
@@ -13,10 +14,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as CreateIntentBody;
     const email = body.email?.trim().toLowerCase();
+    const phone = body.phone?.trim();
     const bumps = body.bumps ?? [];
 
     if (!email) {
       return NextResponse.json({ error: "Email is required." }, { status: 400 });
+    }
+    if (!phone) {
+      return NextResponse.json({ error: "Phone is required." }, { status: 400 });
     }
 
     const validBumps = bumps.filter((bump): bump is (typeof BUMP_PRODUCTS)[number] => BUMP_PRODUCTS.includes(bump as (typeof BUMP_PRODUCTS)[number]));
@@ -24,11 +29,12 @@ export async function POST(request: NextRequest) {
     const amount = PRODUCT_AMOUNTS.entry + validBumps.reduce((sum, bump) => sum + PRODUCT_AMOUNTS[bump], 0);
 
     const existingCustomers = await stripe.customers.list({ email, limit: 1 });
-    const customer =
-      existingCustomers.data[0] ??
-      (await stripe.customers.create({
-        email,
-      }));
+    const customer = existingCustomers.data[0]
+      ? await stripe.customers.update(existingCustomers.data[0].id, { phone })
+      : await stripe.customers.create({
+          email,
+          phone,
+        });
 
     const utms = body.utms ?? {};
 
@@ -41,6 +47,7 @@ export async function POST(request: NextRequest) {
       receipt_email: email,
       metadata: {
         email,
+        phone,
         funnel_step: "checkout",
         product_type: "entry",
         bumps: JSON.stringify(validBumps),
