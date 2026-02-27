@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import UpsellCard from "@/components/UpsellCard";
 import { pixelPurchase, pixelUpsellDeclined, pixelViewContent } from "@/lib/pixel";
 import { PRODUCT_AMOUNTS } from "@/lib/products";
@@ -83,6 +84,17 @@ function UpsellOneContent() {
           <p>
             <strong>The dashboard below solves that.</strong>
           </p>
+        </div>
+
+        <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-soft">
+          <Image
+            src="/images/agent-os-dashboard.png"
+            alt="Private Agent OS dashboard preview"
+            width={1536}
+            height={988}
+            className="h-auto w-full"
+            priority
+          />
         </div>
 
         <h2 className="mt-8 font-heading text-3xl leading-tight text-brand-text md:text-4xl">
